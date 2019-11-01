@@ -64,6 +64,15 @@ class Client : public concord::storage::IDBClient {
         m_dbPath(_dbPath),
         m_comparator(_comparator) {}
 
+  ~Client() {
+    if (txn_db_) {
+      // If we're using a TransactionDB, it wraps the base DB, so release it
+      // instead of releasing the base DB.
+      m_dbInstance.release();
+      delete txn_db_;
+    }
+  }
+
   void init(bool readOnly = false) override;
   concordUtils::Status get(const concordUtils::Sliver& _key, concordUtils::Sliver &_outValue) const override;
   concordUtils::Status get(const concordUtils::Sliver& _key, char *&buf, uint32_t bufSize, uint32_t &_realSize) const override;
